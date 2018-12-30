@@ -27,3 +27,7 @@
 * Windows
 * Linux
 
+## Запуск
+* Если у вас Windows, то запустить *windows_start*
+* Если у вас Linux или Mac OS, то написать *sh unix_start.sh* из этой папки
+
