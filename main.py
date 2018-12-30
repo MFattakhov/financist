@@ -1,5 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication, QPushButton, QScrollArea, \
-    QHBoxLayout, QLabel, QInputDialog, QMessageBox
+    QHBoxLayout, QLabel, QInputDialog
+from PyQt5.QtGui import QIcon
+from add_line import lining
+from add_date import dating
 from PyQt5 import QtCore
 import sys
 
@@ -7,28 +10,43 @@ import sys
 class MyWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.my_balance = my_balance
-        self.count = 0
-        self.inform = -1
+        self.my_balance = 0
+        self.database = ['zero']
         self.setGeometry(450, 200, 400, 400)
+        self.setWindowIcon(QIcon('icon.png'))
 
         self.topLayout = QHBoxLayout()
         self.topLayout.setGeometry(QtCore.QRect(5, 5, 390, 50))
         self.mainLayout = QVBoxLayout()
 
         self.btn = QPushButton(self)
-        self.btn.move(5, 5)
         self.btn.setText("Доход")
         self.btn.clicked.connect(self.btn_plus_money)
 
         self.btn_2 = QPushButton(self)
-        self.btn_2.move(5, 5)
         self.btn_2.setText("Расход")
         self.btn_2.clicked.connect(self.btn_minus_money)
 
-        self.balance = QLabel(f'Ваш Баланс: {str(self.my_balance)}', self)
-
         self.itemsLayout = QVBoxLayout()
+
+        self.itemsLayout.addWidget(lining())
+
+        with open('database.txt', 'r') as file:
+            file = open('database.txt', 'r')
+            if file.read():
+                file.close()
+                with open('database.txt', 'r') as f:
+                        self.database = f.readline().split('#')
+
+                        for widget in self.database[1:]:
+                            widget = widget.split()
+                            corrective = QHBoxLayout()
+                            corrective.addWidget(QLabel(widget[0]))
+                            corrective.addWidget(QLabel(widget[-1]))
+                            self.itemsLayout.addLayout(corrective)
+                            self.itemsLayout.addWidget(lining())
+
+                        self.my_balance = int(self.database[0])
 
         self.scrollWidget = QWidget()
         self.scrollWidget.setLayout(self.itemsLayout)
@@ -36,6 +54,8 @@ class MyWidget(QWidget):
         self.scrollArea = QScrollArea()
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setWidget(self.scrollWidget)
+
+        self.balance = QLabel(f'Ваш Баланс: {str(self.my_balance)}', self)
 
         self.topLayout.addWidget(self.btn)
         self.topLayout.addWidget(self.btn_2)
@@ -45,56 +65,50 @@ class MyWidget(QWidget):
 
         self.setLayout(self.mainLayout)
 
-    def btn_on_click(self):
-        btn = QPushButton(self)
-        btn.setText(str(self.count))
-        self.count += 1
-        self.itemsLayout.addWidget(btn)
-
     def btn_plus_money(self):
         corrective = QHBoxLayout()
-        self.btn_added_in_plus = QPushButton(self)
-        self.btn_added_in_plus.setText('Информация')
-        self.showDialogForPlus()
+        self.show_dialog_for_plus()
+        date = QLabel(dating(), self)
+        corrective.addWidget(date)
         corrective.addWidget(self.profit)
-        corrective.addWidget(self.btn_added_in_plus)
         self.itemsLayout.addLayout(corrective)
+        self.itemsLayout.addWidget(lining())
 
-    def showDialogForPlus(self):
+    def show_dialog_for_plus(self):
         cash, ok = QInputDialog.getText(self, 'Доход', 'Сколько получили?')
 
         if ok:
+            print(self.database)
             self.profit = QLabel(f'+{str(cash)}', self)
             self.my_balance += int(cash)
             self.balance.setText(f'Ваш баланс: {str(self.my_balance)}')
+            self.database[0] = str(self.my_balance)
+            self.database.append(' '.join([dating(), f'+{cash}']))
+            f = open('database.txt', 'w')
+            f.write('#'.join(self.database))
+            f.close()
 
     def btn_minus_money(self):
         corrective = QHBoxLayout()
-        self.btn_added_in_minus = QPushButton(self)
-        self.btn_added_in_minus.setText('Информация')
-        self.showDialogForMinus()
-        self.showDialogForInformation()
-        self.btn_added_in_minus.clicked.connect(self.btn_for_information)
+        self.show_dialog_for_minus()
+        date = QLabel(dating(), self)
+        corrective.addWidget(date)
         corrective.addWidget(self.outgo)
-        corrective.addWidget(self.btn_added_in_minus)
         self.itemsLayout.addLayout(corrective)
+        self.itemsLayout.addWidget(lining())
 
-    def showDialogForMinus(self):
+    def show_dialog_for_minus(self):
         cash, ok = QInputDialog.getText(self, 'Расход', 'Сколько потратили?')
 
         if ok:
             self.outgo = QLabel(f'-{str(cash)}', self)
             self.my_balance -= int(cash)
             self.balance.setText(f'Ваш баланс: {str(self.my_balance)}')
-
-    def showDialogForInformation(self):
-        information, ok = QInputDialog.getText(self, 'Информация', 'Описание')
-
-        if ok:
-            self.inform = information
-
-    def btn_for_information(self, information):
-        QMessageBox.information(self, 'Message', f'{information}')
+            self.database[0] = str(self.my_balance)
+            self.database.append(' '.join([dating(), f'-{cash}']))
+            f = open('database.txt', 'w')
+            f.write('#'.join(self.database))
+            f.close()
 
 
 if __name__ == '__main__':
