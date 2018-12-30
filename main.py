@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication, QPushButton, QScrollArea, \
-    QHBoxLayout, QLabel, QInputDialog
+    QHBoxLayout, QLabel, QInputDialog, QMessageBox
 from PyQt5.QtGui import QIcon
 from add_line import lining
 from add_date import dating
@@ -26,6 +26,10 @@ class MyWidget(QWidget):
         self.btn_2 = QPushButton(self)
         self.btn_2.setText("Расход")
         self.btn_2.clicked.connect(self.btn_minus_money)
+
+        self.clear_button = QPushButton(self)
+        self.clear_button.setText('Очистить')
+        self.clear_button.clicked.connect(self.clear_button_clicked)
 
         self.itemsLayout = QVBoxLayout()
 
@@ -57,6 +61,7 @@ class MyWidget(QWidget):
 
         self.balance = QLabel(f'Ваш Баланс: {str(self.my_balance)}', self)
 
+        self.topLayout.addWidget(self.clear_button)
         self.topLayout.addWidget(self.btn)
         self.topLayout.addWidget(self.btn_2)
         self.topLayout.addWidget(self.balance)
@@ -64,6 +69,13 @@ class MyWidget(QWidget):
         self.mainLayout.addWidget(self.scrollArea)
 
         self.setLayout(self.mainLayout)
+
+    def clear_button_clicked(self):
+        QMessageBox.about(self, 'Информация', 'Перезапустите приложение')
+
+        f = open('database.txt', 'w')
+        f.write('')
+        f.close()
 
     def btn_plus_money(self):
         corrective = QHBoxLayout()
